@@ -1,0 +1,41 @@
+## Interface: 11508
+## Title: AnglerAtlas 
+## Notes: A fishing A-Z
+## Version: 0.1.9
+## Author: deahgib
+## SavedVariables: AnglerAtlasSettings, AnglerAtlasData
+## OptionalDeps: Auctionator
+## DefaultState: enabled
+
+Libs/LibStub/LibStub.lua
+Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
+Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
+Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
+
+ModuleManager.lua
+
+UI/UIPreloader.lua
+
+Dependencies.lua
+
+Data.lua
+Settings.lua
+
+UI/TabManager.lua
+UI/ShowButtons.lua
+UI/FrameDecorations.lua
+UI/GoldDisplay.lua
+UI/FishGrid.lua
+UI/FishInfoBuffs.lua
+UI/FishInfo.lua
+UI/ZonesList.lua
+UI/ZoneInfoFishRates.lua
+UI/ZoneInfo.lua
+UI/Recipes.lua
+UI/Equipment.lua
+UI/RightSideInformationPanel.lua
+UI/MapFishRates.lua
+
+UI/UI.lua
+
+Core.lua

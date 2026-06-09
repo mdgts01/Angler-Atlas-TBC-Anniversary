@@ -1,0 +1,3556 @@
+
+local STATE = {
+    selectedFish = nil,
+    selectedFishInfo = nil,
+    selectedZone = nil,
+    mode = "openwater", -- "openwater" or "pools"
+    zones = {},
+}
+local DATA = {}
+DATA.playerSkill = {}
+DATA.playerInfo = {}
+
+
+
+DATA.textColours = {
+    ['green'] = "|cFF66FF00",
+    ['red'] = "|cFFFF0000",
+    ['white'] = "|cFFFFFFFF",
+    ['yellow'] = "|cFFFFFF00",
+    ['grey'] = "|cFF888888",
+    ['dark'] = "|cFF121212",
+    ['gold'] = "|cFFF7C602"
+}
+
+
+function DATA:SkillLevelColor(lvl)
+    if DATA.playerSkill.hasFishing then
+        local pLvl = DATA.playerSkill.modLevel
+        if lvl <= pLvl then
+            return DATA.textColours.green
+        elseif lvl > pLvl+75 then
+            return DATA.textColours.red
+        else
+            return DATA.textColours.yellow
+        end
+    else
+        return DATA.textColours.red
+    end
+end
+
+
+DATA.zones = {
+    ["11"] = {
+        ["id"] = 11,
+        ["name"] = "Wetlands",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 50,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 69,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.49,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.24,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.17,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["17"] = {
+        ["id"] = 17,
+        ["name"] = "The Barrens",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6522",
+                ["count"] = 32,
+            },
+            {
+                ["id"] = "6358",
+                ["count"] = 28,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 5,
+            },
+        },
+        ["fishStats"] = {
+            -- Deviate Fish
+            ["6522"] = {
+                ["catchChance"] = 0.27,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.18,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.07,
+            },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.07,
+            },
+            -- Raw Slitherskin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.05,
+            },
+        }
+    },
+    ["40"] = {
+        ["id"] = 40,
+        ["name"] = "Westfall",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 38,
+            },
+        },
+        ["fishStats"] = {
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.41,
+            },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.21,
+            },
+            -- Raw Slitherskin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.14,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.04,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.01,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["130"] = {
+        ["id"] = 130,
+        ["name"] = "Silverpine Forest",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 24,
+            },
+            {
+                ["id"] = "21071",
+                ["count"] = 9,
+            },
+        },
+        ["fishStats"] = {
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.38,
+            },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Raw Slitherskin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.12,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Sagefish
+            ["21071"] = {
+                ["catchChance"] = 0.04,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["148"] = {
+        ["id"] = 148,
+        ["name"] = "Darkshore",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Darkshore Grouper
+            -- ["12238"] = {
+            --     ["catchChance"] = 0.29,
+            -- },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.17,
+            },
+            -- Raw Slitherskin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.13,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.09,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.03,
+            },
+        }
+    },
+    ["267"] = {
+        ["id"] = 267,
+        ["name"] = "Hillsbrad Foothills",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 36,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 33,
+            },
+            {
+                ["id"] = "21071",
+                ["count"] = 38,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Sagefish
+            ["21071"] = {
+                ["catchChance"] = 0.25,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.16,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.12,
+            },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.10,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.08,
+            },
+        }
+    },
+    ["1497"] = {
+        ["id"] = 1497,
+        ["name"] = "Undercity",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.42,
+            },
+            -- Sickly Looking Fish
+            -- ["6299"] = {
+            --     ["catchChance"] = 0.15,
+            -- },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.12,
+            },
+        }
+    },
+    ["33"] = {
+        ["id"] = 33,
+        ["name"] = "Stranglethorn Vale",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["extras"] = {
+            "Fishing level increased to %fs205%fd in Jaguero Isle.",
+        },
+        ["fishingPools"] = {
+            {
+                ["id"] = "13422",
+                ["count"] = 34,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 139,
+            },
+            {
+                ["id"] = "6358",
+                ["count"] = 48,
+            },
+            {
+                ["id"] = "21153",
+                ["count"] = 47,
+            },
+        },
+        ["fishStats"] = {
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.18,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.18,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.16,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.07,
+            },
+            -- Raw Greater Sagefish
+            ["21153"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Stonescale Eel
+            ["13422"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Mitril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["16"] = {
+        ["id"] = 16,
+        ["name"] = "Azshara",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["extras"] = {
+            "Fishing level increased to %fs330%fd around Bay of Storms, Hetaera's Clutch and Scalebeard's Cave.",
+        },
+        ["fishingPools"] = {
+            {
+                ["id"] = "13422",
+                ["count"] = 126,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 117,
+            },
+            {
+                ["id"] = "6358",
+                ["count"] = 28,
+            },
+        },
+        ["fishStats"] = {
+            -- Darkclaw Lobster
+            ["13888"] = {
+                ["catchChance"] = 0.26,
+            },
+            -- Winter Squid
+            ["13755"] = {
+                ["catchChance"] = 0.14,
+            },
+            -- Stonescale Eel
+            ["13422"] = {
+                ["catchChance"] = 0.12,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Large Raw Mightfish
+            ["13893"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.04,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Glossy Mightfish
+            ["13754"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.01,
+            },
+            -- Raw Summer Bass
+            ["13756"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["405"] = {
+        ["id"] = 405,
+        ["name"] = "Desolace",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 15,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 35,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.27,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.18,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.14,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["357"] = {
+        ["id"] = 357,
+        ["name"] = "Feralas",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["extras"] = {
+            "Fishing level increased to %fs330%fd around Jademir Lake.",
+        },
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 49,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 63,
+            },
+            {
+                ["id"] = "13422",
+                ["count"] = 25,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.32,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.12,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.09,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.09,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Stonescale Eel
+            ["13422"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Glossy Mightfish
+            ["13754"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Winter Squid
+            ["13755"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["440"] = {
+        ["id"] = 440,
+        ["name"] = "Tanaris",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {
+            {
+                ["id"] = "13422",
+                ["count"] = 19,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 78,
+            },
+            {
+                ["id"] = "6358",
+                ["count"] = 14,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.27,
+            },
+            -- Stonescale Eel
+            ["13422"] = {
+                ["catchChance"] = 0.14,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.14,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.08,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.07,
+            },
+            -- Raw Gossy Mightfish
+            ["13754"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Winter Squid
+            ["13755"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Summer Bass
+            ["13756"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["15"] = {
+        ["id"] = 15,
+        ["name"] = "Dustwallow Marsh",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 33,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 88,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.27,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.24,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.13,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Oliy Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.10,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.10,
+            },
+        }
+    },
+    ["8"] = {
+        ["id"] = 8,
+        ["name"] = "Swamp of Sorrows",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 1,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 10,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.49,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.18,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.08,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.04,
+            },
+        }
+    },
+    ["406"] = {
+        ["id"] = 406,
+        ["name"] = "Stonetalon Mountains",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6359",
+                ["count"] = 17,
+            },
+            {
+                ["id"] = "21071",
+                ["count"] = 11,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.51,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.28,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.08,
+            },
+            -- Raw Sagefish
+            ["21071"] = {
+                ["catchChance"] = 0.05,
+            },
+        }
+    },
+    ["45"] = {
+        ["id"] = 45,
+        ["name"] = "Arathi Highlands",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 6,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 7,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Mitril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.48,
+            },
+            -- Raw Bistle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.26,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.09,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.03,
+            },
+        }
+    },
+    ["47"] = {
+        ["id"] = 47,
+        ["name"] = "Hinterlands",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 34,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 23,
+            },
+            {
+                ["id"] = "13422",
+                ["count"] = 2,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.24,
+            },
+            -- Raw Spotted Yellowtail
+            ["4603"] = {
+                ["catchChance"] = 0.21,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Glossy Mightfish
+            ["13754"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Stonescale Eel
+            ["13422"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Rockscale Cod
+            ["6362"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Winter Squid
+            ["13755"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Suncale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Summer Bass
+            ["13756"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["331"] = {
+        ["id"] = 331,
+        ["name"] = "Ashenvale",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 4,
+            },
+            {
+                ["id"] = "21071",
+                ["count"] = 28,
+            },
+            {
+                ["id"] = "6359",
+                ["count"] = 6,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.39,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.21,
+            },
+            -- Raw Rainbow Fin Albacore
+            ["6361"] = {
+                ["catchChance"] = 0.21,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.08,
+            },
+            -- Raw Sagefish
+            ["21071"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Firefin Snapper
+            ["6359"] = {
+                ["catchChance"] = 0.03,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["361"] = {
+        ["id"] = 361,
+        ["name"] = "Felwood",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 17,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.51,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Oliy Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.09,
+            },
+        }
+    },
+    ["493"] = {
+        ["id"] = 493,
+        ["name"] = "Moonglade",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 63,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.50,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.06,
+            },
+        }
+    },
+    ["490"] = {
+        ["id"] = 490,
+        ["name"] = "Un'Goro Crater",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 13,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.50,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.06,
+            },
+        }
+    },
+    ["28"] = {
+        ["id"] = 28,
+        ["name"] = "Western Plaguelands",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 118,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.50,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.20,
+            },
+            -- Oily Blackmouth
+            ["6358"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.1,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.08,
+            },
+        }
+    },
+    ["1"] = {
+        ["id"] = 1,
+        ["name"] = "Dun Morogh",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.38,
+            },
+        }
+    },
+    ["215"] = {
+        ["id"] = 215,
+        ["name"] = "Mulgore",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.38,
+            },
+        }
+    },
+    ["12"] = {
+        ["id"] = 12,
+        ["name"] = "Elwynn Forest",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.59,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.37,
+            },
+        }
+    },
+    ["85"] = {
+        ["id"] = 85,
+        ["name"] = "Tirisfal Glades",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.45,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.29,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Slitherskin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.01,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.01,
+            },
+        }
+    },
+    ["141"] = {
+        ["id"] = 141,
+        ["name"] = "Teldrassil",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Slither Skin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.58,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.25,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.16,
+            },
+        }
+    },
+    ["14"] = {
+        ["id"] = 14,
+        ["name"] = "Durotar",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Slither Skin Mackerel
+            ["6303"] = {
+                ["catchChance"] = 0.56,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.24,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.17,
+            },
+        }
+    },
+    ["1657"] = {
+        ["id"] = 1657,
+        ["name"] = "Darnassus",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.17,
+            },
+        }
+    },
+    ["1637"] = {
+        ["id"] = 1637,
+        ["name"] = "Orgrimmar",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.17,
+            },
+        }
+    },
+    ["1519"] = {
+        ["id"] = 1519,
+        ["name"] = "Stormwind City",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.17,
+            },
+        }
+    },
+    ["1638"] = {
+        ["id"] = 1638,
+        ["name"] = "Thunder Bluff",
+        ["faction"] = "Horde",
+        ["fishingLevel"] = 1,
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.60,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.17,
+            },
+        }
+    },
+    ["1377"] = {
+        ["id"] = 1377,
+        ["name"] = "Silithus",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishStats"] = {
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.37,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.06,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.04,
+            },
+        }
+    },
+    ["38"] = {
+        ["id"] = 38,
+        ["name"] = "Loch Modan",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 1,
+        ["fishingPools"] = {
+            {
+                ["id"] = "21071",
+                ["count"] = 17,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.31,
+            },
+            -- Raw Sagefish
+            ["21071"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Raw Brisstle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.12,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.09,
+            },
+        }
+    },
+    ["10"] = {
+        ["id"] = 10,
+        ["name"] = "Duskwood",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 60,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.46,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.30,
+            },
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Brilliant Smallfish
+            ["6291"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.02,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["44"] = {
+        ["id"] = 44,
+        ["name"] = "Redridge Mountains",
+        ["faction"] = "Alliance",
+        ["fishingLevel"] = 55,
+        ["fishStats"] = {
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.64,
+            },
+            -- Raw Longjaw Mud Snapper
+            ["6289"] = {
+                ["catchChance"] = 0.35,
+            },
+        }
+    },
+    ["400"] = {
+        ["id"] = 400,
+        ["name"] = "Thousand Needles",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishStats"] = {
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.62,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.35,
+            },
+        }
+    },
+    ["36"] = {
+        ["id"] = 36,
+        ["name"] = "Alterac Mountains",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 130,
+        ["fishingPools"] = {
+            {
+                ["id"] = "21153",
+                ["count"] = 22,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Greater Sagefish
+            ["21153"] = {
+                ["catchChance"] = 0.49,
+            },
+            -- Raw Mithril Head Trout
+            ["8365"] = {
+                ["catchChance"] = 0.24,
+            },
+            -- Raw Bristle Whisker Catfish
+            ["6308"] = {
+                ["catchChance"] = 0.13,
+            },
+        }
+    },
+    ["618"] = {
+        ["id"] = 618,
+        ["name"] = "Winterspring",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishStats"] = {
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.39,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.20,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.09,
+            },
+        }
+    },
+    ["41"] = {
+        ["id"] = 41,
+        ["name"] = "Deadwind Pass",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishStats"] = {
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.40,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.05,
+            },
+        }
+    },
+    ["139"] = {
+        ["id"] = 139,
+        ["name"] = "Eastern Plaguelands",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishingPools"] = {
+            {
+                ["id"] = "6358",
+                ["count"] = 1,
+            },
+        },
+        ["fishStats"] = {
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.37,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.19,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.11,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.05,
+            },
+        }
+    },
+    ["46"] = {
+        ["id"] = 46,
+        ["name"] = "Burning Steppes",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishStats"] = {
+            -- Raw Whitescale Salmon
+            ["13889"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Raw Sunscale Salmon
+            ["13760"] = {
+                ["catchChance"] = 0.08,
+            },
+            -- Raw Nightfin Snapper
+            ["13759"] = {
+                ["catchChance"] = 0.05,
+            },
+            -- Raw Redgill
+            ["13758"] = {
+                ["catchChance"] = 0.02,
+            },
+        }
+    },
+    ["2597"] = {
+        ["id"] = 2597,
+        ["name"] = "Alterac Valley",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 205,
+        ["fishingPools"] = {},
+        ["fishStats"] = {}
+    },
+    ["3277"] = {
+        ["id"] = 3277,
+        ["name"] = "Warsong Gulch",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 1,
+        ["fishingPools"] = {},
+        ["fishStats"] = {}
+    },
+    ["3358"] = {
+        ["id"] = 3358,
+        ["name"] = "Arathi Basin",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 55,
+        ["fishingPools"] = {},
+        ["fishStats"] = {}
+    },
+    ["3483"] = {
+        ["id"] = 3483,
+        ["name"] = "Hellfire Peninsula",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 305,
+        ["fishStats"] = {
+            -- Felblood Snapper
+            ["27441"] = {
+                ["catchChance"] = 0.20,
+            },
+        }
+    },
+    ["3521"] = {
+        ["id"] = 3521,
+        ["name"] = "Zangarmarsh",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 305,
+        ["fishingPools"] = {
+            {
+                ["id"] = "27429",
+                ["count"] = 51,
+            },
+            {
+                ["id"] = "27425",
+                ["count"] = 32,
+            },
+            {
+                ["id"] = "27438",
+                ["count"] = 24,
+            },
+        },
+        ["fishStats"] = {
+            -- Barbed Gill Trout
+            ["27422"] = {
+                ["catchChance"] = 0.71,
+            },
+            -- Spotted Feltail
+            ["27425"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Zangarian Sporefish
+            ["27429"] = {
+                ["catchChance"] = 0.13,
+            },
+            -- Golden Darter
+            ["27438"] = {
+                ["catchChance"] = 0.08,
+            },
+        }
+    },
+    ["3519"] = {
+        ["id"] = 3519,
+        ["name"] = "Terokkar Forest",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 380,
+        ["fishingPools"] = {
+            {
+                ["id"] = "27438",
+                ["count"] = 44,
+            },
+            {
+                ["id"] = "27425",
+                ["count"] = 26,
+            },
+            {
+                ["id"] = "27439",
+                ["count"] = 20,
+            },
+        },
+        ["fishStats"] = {
+            -- Barbed Gill Trout
+            ["27422"] = {
+                ["catchChance"] = 0.64,
+            },
+            -- Golden Darter
+            ["27438"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Spotted Feltail
+            ["27425"] = {
+                ["catchChance"] = 0.15,
+            },
+            -- Furious Crawdad
+            ["27439"] = {
+                ["catchChance"] = 0.20,
+            },
+        }
+    },
+    ["3518"] = {
+        ["id"] = 3518,
+        ["name"] = "Nagrand",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 355,
+        ["fishingPools"] = {
+            {
+                ["id"] = "27437",
+                ["count"] = 47,
+            },
+            {
+                ["id"] = "27435",
+                ["count"] = 24,
+            },
+        },
+        ["fishStats"] = {
+            -- Barbed Gill Trout
+            ["27422"] = {
+                ["catchChance"] = 0.56,
+            },
+            -- Icefin Bluefish
+            ["27437"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Figluster's Mudfish
+            ["27435"] = {
+                ["catchChance"] = 0.21,
+            },
+            -- Felblood Snapper
+            ["27441"] = {
+                ["catchChance"] = 0.05,
+            },
+        }
+    },
+    ["3523"] = {
+        ["id"] = 3523,
+        ["name"] = "Netherstorm",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 380,
+        ["fishingPools"] = {
+            {
+                ["id"] = "27437",
+                ["count"] = 47,
+            },
+            {
+                ["id"] = "27435",
+                ["count"] = 24,
+            },
+        },
+        ["fishStats"] = {
+            -- Barbed Gill Trout
+            ["27422"] = {
+                ["catchChance"] = 0.56,
+            },
+            -- Icefin Bluefish
+            ["27437"] = {
+                ["catchChance"] = 0.22,
+            },
+            -- Figluster's Mudfish
+            ["27435"] = {
+                ["catchChance"] = 0.21,
+            },
+        }
+    },
+    ["3520"] = {
+        ["id"] = 3520,
+        ["name"] = "Shadowmoon Valley",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 375,
+        ["fishStats"] = {
+            -- Felblood Snapper
+            ["27441"] = {
+                ["catchChance"] = 0.20,
+            },
+            -- Barbed Gill Trout
+            ["27422"] = {
+                ["catchChance"] = 0.50,
+            },
+        }
+    }
+
+}
+
+---------------------------------
+DATA.fish = {
+    ["13888"] = {
+        ["name"] = "Darkclaw Lobster",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 330,
+        ["avoidGetawayLevel"] = 425,
+        ["fishedIn"] = {
+            "16" -- Azshara
+        }
+    },
+    ["6522"] = {
+        ["name"] = "Deviate Fish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 75,
+        ["isBuffFish"] = true,
+        ["isAlchemicFish"] = true,
+        ["requirements"] = {
+            "The Wailing Caverns is also a good quiet place to fish these with a drop rate of ~31%.",
+        },
+        ["fishedIn"] = {
+            "17" -- The Barrens
+        }
+    },
+    ["6359"] = {
+        ["name"] = "Firefin Snapper",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 55,
+        ["avoidGetawayLevel"] = 150,
+        ["isAlchemicFish"] = true,
+        ["fishedIn"] = {
+            "33", -- Stranglethorn Vale
+            "11", -- Wetlands
+            "405", -- Desolace
+            "440", -- Tanaris
+            "267", -- Hillsbrad Foothills
+            "15", -- Dustwallow Marsh
+            "8", -- Swamp of Sorrows
+            "406", -- Stonetalon Mountains
+            "45", -- Arathi Highlands
+            "357", -- Feralas
+            "47", -- Hinterlands
+            "331", -- Ashenvale
+            "16" -- Azshara
+        }
+    },
+    ["13893"] = {
+        ["name"] = "Large Raw Mightfish",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 330,
+        ["avoidGetawayLevel"] = 425,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "16" -- Azshara
+        }
+    },
+    ["6358"] = {
+        ["name"] = "Oily Blackmouth",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 75,
+        ["isAlchemicFish"] = true,
+        ["fishedIn"] = {
+            "40", -- Westfall
+            "130", -- Silverpine Forest
+            "11", -- Wetlands
+            "17", -- The Barrens
+            "148", -- Darkshore
+            "267", -- Hillsbrad Foothills
+            "33", -- Stranglethorn Vale
+            "405", -- Desolace
+            "15", -- Dustwallow Marsh
+            "361", -- Felwood
+            "493", -- Moonglade
+            "8", -- Swamp of Sorrows
+            "490", -- Un'Goro Crater
+            "28", -- Western Plaguelands
+            "357", -- Feralas
+            "331", -- Ashenvale
+            "440", -- Tanaris
+            "45", -- Arathi Highlands
+            "47", -- Hinterlands
+            "16" -- Azshara
+        }
+    },
+    ["6291"] = {
+        ["name"] = "Raw Brilliant Smallfish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 25,
+        ["fishedIn"] = {
+            "1", -- Dun Morogh
+            "215", -- Mulgore
+            "12", -- Elwynn Forest
+            "85", -- Tirisfal Glades
+            "141", -- Teldrassil
+            "14", -- Durotar
+            "1657", -- Darnassus
+            "1637", -- Orgrimmar
+            "1519", -- Stormwind City
+            "1638", -- Thunder Bluff
+            "1497", -- Undercity
+            "38", -- Loch Modan
+            "17", -- The Barrens
+            "10", -- Duskwood
+            "148", -- Darkshore
+            "130", -- Silverpine Forest
+            "40", -- Westfall
+        }
+    },
+    ["6308"] = {
+        ["name"] = "Raw Bristle Whisker Catfish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 55,
+        ["avoidGetawayLevel"] = 150,
+        ["fishedIn"] = {
+            "44", -- Redridge Mountains
+            "406", -- Stonetalon Mountains
+            "10", -- Duskwood
+            "331", -- Ashenvale
+            "400", -- Thousand Needles
+            "45", -- Arathi Highlands
+            "1657", -- Darnassus
+            "1637", -- Orgrimmar
+            "1519", -- Stormwind City
+            "1638", -- Thunder Bluff
+            "267", -- Hillsbrad Foothills
+            "1497", -- Undercity
+            "405", -- Desolace
+            "36", -- Alterac Mountains
+            "15", -- Dustwallow Marsh
+            "38", -- Loch Modan
+            "17", -- The Barrens
+            "8", -- Swamp of Sorrows
+            "148", -- Darkshore
+            "130", -- Silverpine Forest
+            "11", -- Wetlands
+            "33", -- Stranglethorn Vale
+            "40", -- Westfall
+            "85", -- Tirisfal Glades
+
+        }
+    },
+    ["13754"] = {
+        ["name"] = "Raw Glossy Mightfish",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "440", -- Tanaris
+            "47", -- Hinterlands
+            "16", -- Azshara
+            "357", -- Feralas
+        }
+    },
+    ["21153"] = {
+        ["name"] = "Raw Greater Sagefish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 130,
+        ["avoidGetawayLevel"] = 225,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "36", -- Alterac Mountains
+            "33", -- Stranglethorn Vale
+        }
+    },
+    ["6289"] = {
+        ["name"] = "Raw Longjaw Mud Snapper",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 75,
+        ["fishedIn"] = {
+            "1657", -- Darnassus
+            "1637", -- Orgrimmar
+            "1519", -- Stormwind City
+            "1638", -- Thunder Bluff
+            "1497", -- Undercity
+            "1", -- Dun Morogh
+            "215", -- Mulgore
+            "12", -- Elwynn Forest
+            "44", -- Redridge Mountains
+            "38", -- Loch Modan
+            "10", -- Duskwood
+            "85", -- Tirisfal Glades
+            "406", -- Stonetalon Mountains
+            "331", -- Ashenvale
+            "17", -- The Barrens
+            "14", -- Durotar
+            "141", -- Teldrassil
+            "148", -- Darkshore
+            "267", -- Hillsbrad Foothills
+            "130", -- Silverpine Forest
+            "40", -- Westfall
+        }
+    },
+    ["8365"] = {
+        ["name"] = "Raw Mithril Head Trout",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 130,
+        ["avoidGetawayLevel"] = 225,
+        ["fishedIn"] = {
+            "400", -- Thousand Needles
+            "45", -- Arathi Highlands
+            "405", -- Desolace
+            "36", -- Alterac Mountains
+            "15", -- Dustwallow Marsh
+            "361", -- Felwood
+            "493", -- Moonglade
+            "490", -- Un'Goro Crater
+            "28", -- Western Plaguelands
+            "8", -- Swamp of Sorrows
+            "357", -- Feralas
+            "47", -- Hinterlands
+            "33", -- Stranglethorn Vale
+            "85", -- Tirisfal Glades
+        }
+    },
+    ["13759"] = {
+        ["name"] = "Raw Nightfin Snapper",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isBuffFish"] = true,
+        ["requirements"] = {
+            "Increased chance to catch between 00:00 and 06:00.",
+            "Unavailable between 12:00 and 18:00."
+        },
+        ["fishedIn"] = {
+            "493", -- Moonglade
+            "490", -- Un'Goro Crater
+            "28", -- Western Plaguelands
+            "618", -- Winterspring
+            "41", -- Deadwind Pass
+            "139", -- Eastern Plaguelands
+            "361", -- Felwood
+            "357", -- Feralas
+            "47", -- Hinterlands
+            "1377", -- Silithus
+            "46", -- Burning Steppes
+            "10", -- Duskwood
+            "16", -- Azshara
+        }
+    },
+    ["6361"] = {
+        ["name"] = "Raw Rainbow Fin Albacore",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 75,
+        ["fishedIn"] = {
+            "11", -- Wetlands
+            "331", -- Ashenvale
+            "40", -- Westfall
+            "148", -- Darkshore
+            "130", -- Silverpine Forest
+            "267", -- Hillsbrad Foothills
+            "17", -- The Barrens
+        }
+    },
+    ["13758"] = {
+        ["name"] = "Raw Redgill",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["fishedIn"] = {
+            "361", -- Felwood
+            "493", -- Moonglade
+            "490", -- Un'Goro Crater
+            "28", -- Western Plaguelands
+            "357", -- Feralas
+            "47", -- Hinterlands
+            "139", -- Eastern Plaguelands
+            "41", -- Deadwind Pass
+            "618", -- Winterspring
+            "16", -- Azshara
+            "1377", -- Silithus
+            "46", -- Burning Steppes
+            "405", -- Desolace
+            "331", -- Ashenvale
+        }
+    },
+    ["6362"] = {
+        ["name"] = "Raw Rockscale Cod",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 130,
+        ["avoidGetawayLevel"] = 225,
+        ["fishedIn"] = {
+            "8", -- Swamp of Sorrows
+            "15", -- Dustwallow Marsh
+            "405", -- Desolace
+            "33", -- Stranglethorn Vale
+            "45", -- Arathi Highlands
+            "440", -- Tanaris
+            "47", -- Hinterlands
+            "16", -- Azshara
+            "357", -- Feralas
+        }
+    },
+    ["21071"] = {
+        ["name"] = "Raw Sagefish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 75,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "267", -- Hillsbrad Foothills
+            "38", -- Loch Modan
+            "331", -- Ashenvale
+            "406", -- Stonetalon Mountains
+            "130", -- Silverpine Forest
+        }
+    },
+    ["6303"] = {
+        ["name"] = "Raw Slitherskin Mackerel",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 1,
+        ["avoidGetawayLevel"] = 25,
+        ["fishedIn"] = {
+            "141", -- Teldrassil
+            "14", -- Durotar
+            "40", -- Westfall
+            "148", -- Darkshore
+            "130", -- Silverpine Forest
+            "17", -- The Barrens
+            "85", -- Tirisfal Glades
+        }
+    },
+    ["4603"] = {
+        ["name"] = "Raw Spotted Yellowtail",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["fishedIn"] = {
+            "440", -- Tanaris
+            "47", -- Hinterlands
+            "8", -- Swamp of Sorrows
+            "16", -- Azshara
+            "15", -- Dustwallow Marsh
+            "357", -- Feralas
+            "33", -- Stranglethorn Vale
+            "405", -- Desolace
+            "45", -- Arathi Highlands
+        }
+    },
+    ["13756"] = {
+        ["name"] = "Raw Summer Bass",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isBuffFish"] = true,
+        ["requirements"] = {
+            "Only available between the Spring Equinox and the Autumn Equinox",
+            "Unavailable between 00:00 and 06:00.",
+        },
+        ["fishedIn"] = {
+            "47", -- Hinterlands
+            "440", -- Tanaris
+            "16", -- Azshara
+        }
+    },
+    ["13760"] = {
+        ["name"] = "Raw Sunscale Salmon",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "1377", -- Silithus
+            "41", -- Deadwind Pass
+            "139", -- Eastern Plaguelands
+            "618", -- Winterspring
+            "361", -- Felwood
+            "46", -- Burning Steppes
+            "28", -- Western Plaguelands
+            "357", -- Feralas
+            "493", -- Moonglade
+            "490", -- Un'Goro Crater
+            "47", -- Hinterlands
+            "10", -- Duskwood
+
+        }
+    },
+    ["13889"] = {
+        ["name"] = "Raw Whitescale Salmon",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 330,
+        ["avoidGetawayLevel"] = 425,
+        ["fishedIn"] = {
+            "41", -- Deadwind Pass
+            "618", -- Winterspring
+            "139", -- Eastern Plaguelands
+            "1377", -- Silithus
+            "46", -- Burning Steppes
+            "10", -- Duskwood
+        }
+    },
+    ["13422"] = {
+        ["name"] = "Stonescale Eel",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isAlchemicFish"] = true,
+        ["requirements"] = {
+            "Increased chance to catch between 00:00 and 12:00.",
+            "Decreased chance to catch between 12:00 and 00:00."
+        },
+        ["fishedIn"] = {
+            "440", -- Tanaris
+            "16", -- Azshara
+            "357", -- Feralas
+            "33", -- Stranglethorn Vale
+            "47" -- Hinterlands
+        }
+    },
+    ["13755"] = {
+        ["name"] = "Winter Squid",
+        ["type"] = "C",
+        ["minimumFishingLevel"] = 205,
+        ["avoidGetawayLevel"] = 300,
+        ["isBuffFish"] = true,
+        ["requirements"] = {
+            "Only available between the Autumn Equinox and the Spring Equinox",
+            "Unavailable between 00:00 and 06:00."
+        },
+        ["fishedIn"] = {
+            "16", -- Azshara
+            "440", -- Tanaris
+            "47", -- Hinterlands
+            "357", -- Feralas
+        }
+    },
+    ["27422"] = {
+        ["name"] = "Barbed Gill Trout",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 305,
+        ["avoidGetawayLevel"] = 500,
+        ["fishedIn"] = {
+            "3521", -- Zangarmarsh
+            "3519", -- Terokkar Forest
+            "3518", -- Nagrand
+            "3523", -- Netherstorm
+            "3520", -- Shadowmoon Valley
+        }
+    },
+    ["27425"] = {
+        ["name"] = "Spotted Feltail",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 305,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "3521", -- Zangarmarsh
+            "3519", -- Terokkar Forest
+        }
+    },
+    ["27429"] = {
+        ["name"] = "Zangarian Sporefish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 305,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "3521", -- Zangarmarsh
+        }
+    },
+    ["27435"] = {
+        ["name"] = "Figluster's Mudfish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 355,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "3518", -- Nagrand
+            "3523", -- Netherstorm
+        }
+    },
+    ["27437"] = {
+        ["name"] = "Icefin Bluefish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 355,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "3518", -- Nagrand
+            "3523", -- Netherstorm
+        }
+    },
+    ["27438"] = {
+        ["name"] = "Golden Darter",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 380,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["fishedIn"] = {
+            "3519", -- Terokkar Forest
+            "3521", -- Zangarmarsh
+        }
+    },
+    ["27439"] = {
+        ["name"] = "Furious Crawdad",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 430,
+        ["avoidGetawayLevel"] = 500,
+        ["isBuffFish"] = true,
+        ["requirements"] = {
+            "Only caught from Highland Mixed Schools in Blackwind Lake, Lake Ere'Noru, and Lake Jorune in Terokkar Forest.",
+        },
+        ["fishedIn"] = {
+            "3519", -- Terokkar Forest
+        }
+    },
+    ["27441"] = {
+        ["name"] = "Felblood Snapper",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 305,
+        ["avoidGetawayLevel"] = 500,
+        ["requirements"] = {
+            "Used for the Felblood Fillet fishing daily.",
+        },
+        ["fishedIn"] = {
+            "3483", -- Hellfire Peninsula
+            "3518", -- Nagrand
+            "3520", -- Shadowmoon Valley
+        }
+    }
+}
+
+DATA.pools = {
+    ["21071"] = {
+        ["name"] = "Raw Sagefish",
+        ["count"] = 103,
+        ["zones"] = {
+            "130", -- Silverpine Forest
+            "267", -- Hillsbrad Foothills
+            "38", -- Loch Modan
+            "331", -- Ashenvale
+            "406", -- Stonetalon Mountains
+        },
+    },
+    ["6358"] = {
+        ["name"] = "Oily Blackmouth",
+        ["count"] = 680,
+        ["zones"] = {
+            "45", -- Arathi Highlands
+            "490", -- Un'Goro Crater
+            "493", -- Moonglade
+            "130", -- Silverpine Forest
+            "28", -- Western Plaguelands
+            "139", -- Eastern Plaguelands
+            "267", -- Hillsbrad Foothills
+            "47", -- The Hinterlands
+            "33", -- Stranglethorn Vale
+            "8", -- Swamp of Sorrows
+            "40", -- Westfall
+            "11", -- Wetlands
+            "17", -- The Barrens
+            "10", -- Duskwood
+            "331", -- Ashenvale
+            "405", -- Desolace
+            "357", -- Feralas
+            "15", -- Dustwallow Marsh
+            "440", -- Tanaris
+            "16", -- Azshara
+            "361", -- Felwood
+        },
+    },
+    ["13422"] = {
+        ["name"] = "Stonescale Eel",
+        ["count"] = 206,
+        ["zones"] = {
+            "47", -- The Hinterlands
+            "33", -- Stranglethorn Vale
+            "357", -- Feralas
+            "440", -- Tanaris
+            "16", -- Azshara
+        },
+    },
+    ["6522"] = {
+        ["name"] = "Deviate Fish",
+        ["count"] = 32,
+        ["zones"] = {
+            "17", -- The Barrens
+        },
+    },
+    ["6359"] = {
+        ["name"] = "Firefin Snapper",
+        ["count"] = 690,
+        ["zones"] = {
+            "45", -- Arathi Highlands
+            "267", -- Hillsbrad Foothills
+            "47", -- The Hinterlands
+            "33", -- Stranglethorn Vale
+            "8", -- Swamp of Sorrows
+            "11", -- Wetlands
+            "17", -- The Barrens
+            "331", -- Ashenvale
+            "406", -- Stonetalon Mountains
+            "405", -- Desolace
+            "357", -- Feralas
+            "15", -- Dustwallow Marsh
+            "440", -- Tanaris
+            "16", -- Azshara
+        },
+    },
+    ["21153"] = {
+        ["name"] = "Raw Greater Sagefish",
+        ["count"] = 69,
+        ["zones"] = {
+            "33", -- Stranglethorn Vale
+            "36", -- Alterac Mountains
+        },
+    },
+    ["27425"] = {
+        ["name"] = "Spotted Feltail",
+        ["count"] = 58,
+        ["zones"] = {
+            "3521", -- Zangarmarsh
+            "3519", -- Terokkar Forest
+        },
+    },
+    ["27429"] = {
+        ["name"] = "Zangarian Sporefish",
+        ["count"] = 51,
+        ["zones"] = {
+            "3521", -- Zangarmarsh
+        },
+    },
+    ["27435"] = {
+        ["name"] = "Figluster's Mudfish",
+        ["count"] = 24,
+        ["zones"] = {
+            "3518", -- Nagrand
+            "3523", -- Netherstorm
+        },
+    },
+    ["27437"] = {
+        ["name"] = "Icefin Bluefish",
+        ["count"] = 47,
+        ["zones"] = {
+            "3518", -- Nagrand
+            "3523", -- Netherstorm
+        },
+    },
+    ["27438"] = {
+        ["name"] = "Golden Darter",
+        ["count"] = 72,
+        ["zones"] = {
+            "3519", -- Terokkar Forest
+            "3521", -- Zangarmarsh
+        },
+    },
+    ["27439"] = {
+        ["name"] = "Furious Crawdad",
+        ["count"] = 20,
+        ["zones"] = {
+            "3519", -- Terokkar Forest
+        },
+    },
+}
+
+DATA.recipes = {
+    --|   Darkclaw Lobster
+    ["13888"] = {
+        {
+            ["productId"] = "13933",
+            ['productQ'] = 1,
+            ["recipeName"] = "Lobster Stew",
+            ['reagents'] = {
+                -- Darkclaw Lobster
+                {
+                    ["itemId"] = "13888",
+                    ["itemQ"] = 1
+                },
+                -- Refreshing Spring Water
+                {
+                    ["itemId"] = "159",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13947"
+
+        }
+    },
+    --|   Deviate Fish
+    ["6522"] = {
+        {
+            ["productId"] = "6657",
+            ['productQ'] = 1,
+            ["recipeName"] = "Savory Deviate Delight",
+            ['reagents'] = {
+                -- Deviate Fish
+                {
+                    ["itemId"] = "6522",
+                    ["itemQ"] = 1
+                },
+                -- Mild Spices
+                {
+                    ["itemId"] = "2678",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6661"
+        },
+        {
+            ["productId"] = "6662",
+            ['productQ'] = 1,
+            ["recipeName"] = "Elixir of Giant Growth",
+            ['reagents'] = {
+                -- Deviate Fish
+                {
+                    ["itemId"] = "6522",
+                    ["itemQ"] = 1
+                },
+                -- Earthroot
+                {
+                    ["itemId"] = "2449",
+                    ["itemQ"] = 1
+                },
+                -- Empty Vial
+                {
+                    ["itemId"] = "3371",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6663"
+        }
+    },
+    --|   Firefin Snapper
+    ["6359"] = {
+        {
+            ["productId"] = "6371",
+            ['productQ'] = 1,
+            ["recipeName"] = "Fire Oil",
+            ['reagents'] = {
+                -- Firefin Snapper
+                {
+                    ["itemId"] = "6359",
+                    ["itemQ"] = 2
+                },
+                -- Empty Vial
+                {
+                    ["itemId"] = "3371",
+                    ["itemQ"] = 1
+                },
+            }
+        }
+    },
+    --|   Large Raw Mightfish
+    ["13893"] = {
+        {
+            ["productId"] = "13934",
+            ['productQ'] = 1,
+            ["recipeName"] = "Mightfish Steak",
+            ['reagents'] = {
+                -- Large Raw Mightfish
+                {
+                    ["itemId"] = "13893",
+                    ["itemQ"] = 1
+                },
+                -- Hot Spices
+                {
+                    ["itemId"] = "2692",
+                    ["itemQ"] = 1
+                },
+                -- Soothing Spices
+                {
+                    ["itemId"] = "3713",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13948"
+        }
+    },
+    --|   Oily Blackmouth
+    ["6358"] = {
+        {
+            ["productId"] = "6370",
+            ['productQ'] = 1,
+            ["recipeName"] = "Blackmouth Oil",
+            ['reagents'] = {
+                -- Oily Blackmouth
+                {
+                    ["itemId"] = "6358",
+                    ["itemQ"] = 2
+                },
+                -- Empty Vial
+                {
+                    ["itemId"] = "3371",
+                    ["itemQ"] = 1
+                },
+            }
+        }
+    },
+    --|   Raw Brilliant Smallfish
+    ["6291"] = {
+        {
+            ["productId"] = "6290",
+            ['productQ'] = 1,
+            ["recipeName"] = "Brilliant Smallfish",
+            ['reagents'] = {
+                -- Raw Brilliant Smallfish
+                {
+                    ["itemId"] = "6291",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6325"
+        }
+    },
+    --|   Raw Bristle Whisker Catfish
+    ["6308"] = {
+        {
+            ["productId"] = "4593",
+            ['productQ'] = 1,
+            ["recipeName"] = "Bristle Whisker Catfish",
+            ['reagents'] = {
+                -- Raw Bristle Whisker Catfish
+                {
+                    ["itemId"] = "6308",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6330"
+        },
+    },
+    --|   Raw Glossy Mightfish
+    ["13754"] = {
+        {
+            ["productId"] = "13927",
+            ['productQ'] = 1,
+            ["recipeName"] = "Cooked Glossy Mightfish",
+            ['reagents'] = {
+                -- Raw Glossy Mightfish
+                {
+                    ["itemId"] = "13754",
+                    ["itemQ"] = 1
+                },
+                -- Soothing Spices
+                {
+                    ["itemId"] = "3713",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13940"
+        }
+    },
+    --|   Raw Greater Sagefish
+    ["21153"] = {
+        {
+            ["productId"] = "21217",
+            ['productQ'] = 1,
+            ["recipeName"] = "Sagefish Delight",
+            ['reagents'] = {
+                -- Raw Greater Sagefish
+                {
+                    ["itemId"] = "21153",
+                    ["itemQ"] = 1
+                },
+                -- Hot Spices
+                {
+                    ["itemId"] = "2692",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "21219"
+        }
+    },
+    --|   Raw Longjaw Mud Snapper
+    ["6289"] = {
+        {
+            ["productId"] = "4592",
+            ['productQ'] = 1,
+            ["recipeName"] = "Longjaw Mud Snapper",
+            ['reagents'] = {
+                -- Raw Longjaw Mud Snapper
+                {
+                    ["itemId"] = "6289",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6328"
+        }
+    },
+    --|   Raw Mithril Head Trout
+    ["8365"] = {
+        {
+            ["productId"] = "8364",
+            ['productQ'] = 1,
+            ["recipeName"] = "Mithril Head Trout",
+            ['reagents'] = {
+                -- Raw Mithril Head Trout
+                {
+                    ["itemId"] = "8365",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "17062"
+        }
+    },
+    --|   Raw Nightfin Snapper
+    ["13759"] = {
+        {
+            ["productId"] = "13931",
+            ['productQ'] = 1,
+            ["recipeName"] = "Nightfin Soup",
+            ['reagents'] = {
+                -- Raw Nightfin Snapper
+                {
+                    ["itemId"] = "13759",
+                    ["itemQ"] = 1
+                },
+                -- Refreshing Spring Water
+                {
+                    ["itemId"] = "159",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13945"
+        }
+    },
+    --|   Raw Rainbow Fin Albacore
+    ["6361"] = {
+        {
+            ["productId"] = "5095",
+            ['productQ'] = 1,
+            ["recipeName"] = "Rainbow Fin Albacore",
+            ['reagents'] = {
+                -- Raw Rainbow Fin Albacore
+                {
+                    ["itemId"] = "6361",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6368"
+        }
+    },
+    --|   Raw Redgill
+    ["13758"] = {
+        {
+            ["productId"] = "13930",
+            ['productQ'] = 1,
+            ["recipeName"] = "Filet of Redgill",
+            ['reagents'] = {
+                -- Raw Redgill
+                {
+                    ["itemId"] = "13758",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13941"
+        }
+    },
+    --|   Raw Rockscale Cod
+    ["6362"] = {
+        {
+            ["productId"] = "4594",
+            ['productQ'] = 1,
+            ["recipeName"] = "Rockscale Cod",
+            ['reagents'] = {
+                -- Raw Rockscale Cod
+                {
+                    ["itemId"] = "6362",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6369"
+        }
+    },
+    --|   Raw Sagefish
+    ["21071"] = {
+        {
+            ["productId"] = "21072",
+            ['productQ'] = 1,
+            ["recipeName"] = "Smoked Sagefish",
+            ['reagents'] = {
+                -- Raw Sagefish
+                {
+                    ["itemId"] = "21071",
+                    ["itemQ"] = 1
+                },
+                -- Mild Spices
+                {
+                    ["itemId"] = "2678",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "21099"
+        }
+    },
+    --|   Raw Slitherskin Mackerel
+    ["6303"] = {
+        {
+            ["productId"] = "787",
+            ['productQ'] = 1,
+            ["recipeName"] = "Slitherskin Mackerel",
+            ['reagents'] = {
+                -- Raw Slitherskin Mackerel
+                {
+                    ["itemId"] = "6303",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "6326"
+        }
+    },
+    --|   Raw Spotted Yellowtail
+    ["4603"] = {
+        {
+            ["productId"] = "6887",
+            ['productQ'] = 1,
+            ["recipeName"] = "Spotted Yellowtail",
+            ['reagents'] = {
+                -- Raw Spotted Yellowtail
+                {
+                    ["itemId"] = "4603",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13939"
+        }
+    },
+    --|   Raw Summer Bass
+    ["13756"] = {
+        {
+            ["productId"] = "13929",
+            ['productQ'] = 1,
+            ["recipeName"] = "Hot Smoked Bass",
+            ['reagents'] = {
+                -- Raw Summer Bass
+                {
+                    ["itemId"] = "13756",
+                    ["itemQ"] = 1
+                },
+                -- Hot Spices
+                {
+                    ["itemId"] = "2692",
+                    ["itemQ"] = 2
+                },
+            },
+            ["recipeItemId"] = "13943"
+        }
+    },
+    --|   Raw Sunscale Salmon
+    ["13760"] = {
+        {
+            ["productId"] = "13932",
+            ['productQ'] = 1,
+            ["recipeName"] = "Poached Sunscale Salmon",
+            ['reagents'] = {
+                -- Raw Sunscale Salmon
+                {
+                    ["itemId"] = "13760",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13946"
+        }
+    },
+    --|   Raw Whitescale Salmon
+    ["13889"] = {
+        {
+            ["productId"] = "13935",
+            ['productQ'] = 1,
+            ["recipeName"] = "Baked Salmon",
+            ['reagents'] = {
+                -- Raw Whitescale Salmon
+                {
+                    ["itemId"] = "13889",
+                    ["itemQ"] = 1
+                },
+                -- Soothing Spices
+                {
+                    ["itemId"] = "3713",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13949"
+        }
+    },
+    --|   Stonescale Eel
+    ["13422"] = {
+        {
+            ["productId"] = "13423",
+            ['productQ'] = 1,
+            ["recipeName"] = "Stonescale Oil",
+            ['reagents'] = {
+                -- Stonescale Eel
+                {
+                    ["itemId"] = "13422",
+                    ["itemQ"] = 2
+                },
+                -- Leaded Vial
+                {
+                    ["itemId"] = "3372",
+                    ["itemQ"] = 1
+                },
+            }
+        }
+    },
+    --|   Winter Squid
+    ["13755"] = {
+        {
+            ["productId"] = "13928",
+            ['productQ'] = 1,
+            ["recipeName"] = "Grilled Squid",
+            ['reagents'] = {
+                -- Winter Squid
+                {
+                    ["itemId"] = "13755",
+                    ["itemQ"] = 1
+                },
+                -- Soothing Spices
+                {
+                    ["itemId"] = "3713",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "13942"
+        }
+    },
+    --|   Barbed Gill Trout
+    ["27422"] = {
+        {
+            ["productId"] = "27661",
+            ['productQ'] = 1,
+            ["recipeName"] = "Blackened Trout",
+            ['reagents'] = {
+                -- Barbed Gill Trout
+                {
+                    ["itemId"] = "27422",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27694"
+        }
+    },
+    --|   Spotted Feltail
+    ["27425"] = {
+        {
+            ["productId"] = "27662",
+            ['productQ'] = 1,
+            ["recipeName"] = "Feltail Delight",
+            ['reagents'] = {
+                -- Spotted Feltail
+                {
+                    ["itemId"] = "27425",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27695"
+        }
+    },
+    --|   Zangarian Sporefish
+    ["27429"] = {
+        {
+            ["productId"] = "27663",
+            ['productQ'] = 1,
+            ["recipeName"] = "Blackened Sporefish",
+            ['reagents'] = {
+                -- Zangarian Sporefish
+                {
+                    ["itemId"] = "27429",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27696"
+        }
+    },
+    --|   Figluster's Mudfish
+    ["27435"] = {
+        {
+            ["productId"] = "27664",
+            ['productQ'] = 1,
+            ["recipeName"] = "Grilled Mudfish",
+            ['reagents'] = {
+                -- Figluster's Mudfish
+                {
+                    ["itemId"] = "27435",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27697"
+        }
+    },
+    --|   Icefin Bluefish
+    ["27437"] = {
+        {
+            ["productId"] = "27665",
+            ['productQ'] = 1,
+            ["recipeName"] = "Poached Bluefish",
+            ['reagents'] = {
+                -- Icefin Bluefish
+                {
+                    ["itemId"] = "27437",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27698"
+        }
+    },
+    --|   Golden Darter
+    ["27438"] = {
+        {
+            ["productId"] = "27666",
+            ['productQ'] = 1,
+            ["recipeName"] = "Golden Fish Sticks",
+            ['reagents'] = {
+                -- Golden Darter
+                {
+                    ["itemId"] = "27438",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27699"
+        }
+    },
+    --|   Furious Crawdad
+    ["27439"] = {
+        {
+            ["productId"] = "27667",
+            ['productQ'] = 1,
+            ["recipeName"] = "Spicy Crawdad",
+            ['reagents'] = {
+                -- Furious Crawdad
+                {
+                    ["itemId"] = "27439",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "27700"
+        }
+    },
+    --|   Felblood Snapper
+    ["27441"] = {
+    }
+}
+
+-- local node_textures = {
+-- 	["Fishing"] = {
+-- 		[101] = icon_path.."Fish\\treasure.tga",
+-- 		--[102] = icon_path.."Fish\\purewater.tga",
+-- 		[103] = icon_path.."Fish\\debris.tga",
+-- 		--[104] = icon_path.."Fish\\oilspill.tga",
+-- 		[105] = icon_path.."Fish\\firefin.tga",
+-- 		[106] = icon_path.."Fish\\greater_sagefish.tga",
+-- 		[107] = icon_path.."Fish\\oilyblackmouth.tga",
+-- 		[108] = icon_path.."Fish\\sagefish.tga",
+-- 		[109] = icon_path.."Fish\\firefin.tga",
+-- 		[110] = icon_path.."Fish\\eel.tga",
+-- 		--[111] = icon_path.."Fish\\net.tga",
+-- 		[112] = icon_path.."Fish\\fish_hook.tga",
+-- 		[113] = icon_path.."Fish\\purewater.tga",
+-- 		[114] = icon_path.."Fish\\bluefish.tga",
+-- 		[115] = icon_path.."Fish\\feltail.tga",
+-- 		[116] = icon_path.."Fish\\mudfish.tga",
+-- 		[117] = icon_path.."Fish\\darter.tga",
+-- 		[118] = icon_path.."Fish\\sporefish.tga",
+-- 		[119] = icon_path.."Fish\\steampump.tga",
+-- 		[120] = icon_path.."Fish\\net.tga",
+-- 		[121] = icon_path.."Fish\\manowar.tga",
+-- 		[122] = icon_path.."Fish\\net.tga",
+-- 		[123] = icon_path.."Fish\\anglefish.tga",
+-- 		[124] = icon_path.."Fish\\herring.tga",
+-- 		[125] = icon_path.."Fish\\treasure.tga",
+-- 		[126] = icon_path.."Fish\\salmon.tga",
+-- 		[127] = icon_path.."Fish\\minnow.tga",
+-- 		[128] = icon_path.."Fish\\manta.tga",
+-- 		[129] = icon_path.."Fish\\bonescale.tga",
+-- 		[130] = icon_path.."Fish\\musselback.tga",
+-- 		[131] = icon_path.."Fish\\nettlefish.tga",
+-- 		[132] = icon_path.."Fish\\purewater.tga",
+-- 		[133] = icon_path.."Fish\\treasure.tga",
+-- 		[134] = icon_path.."Fish\\treasure.tga",
+-- 		[135] = icon_path.."Fish\\treasure.tga",
+-- 		[136] = icon_path.."Fish\\fish_hook.tga",
+-- 		--[136] = icon_path.."Fish\\sagefish.tga",
+-- 		--[137] = icon_path.."Fish\\oilyblackmouth.tga",
+-- 		--[138] = icon_path.."Fish\\oilyblackmouth.tga",
+-- 		--[139] = icon_path.."Fish\\oilyblackmouth.tga",
+-- 		--[140] = icon_path.."Fish\\oilyblackmouth.tga",
+-- 		--[141] = icon_path.."Fish\\firefin.tga",
+-- 		--[142] = icon_path.."Fish\\firefin.tga",
+-- 		--[143] = icon_path.."Fish\\firefin.tga",
+-- 		--[144] = icon_path.."Fish\\firefin.tga",
+-- 		--[145] = icon_path.."Fish\\debris.tga",
+-- 		--[146] = icon_path.."Fish\\treasure.tga",
+-- 		--[147] = icon_path.."Fish\\treasure.tga",
+-- 		--[148] = icon_path.."Fish\\treasure.tga",
+-- 		[149] = icon_path.."Fish\\salmon.tga",
+-- 		--[150] = icon_path.."Fish\\goby.tga",
+-- 		[151] = icon_path.."Fish\\mudfish.tga",
+-- 		[152] = icon_path.."Fish\\feel.tga",
+-- 		[153] = icon_path.."Fish\\hguppy.tga",
+-- 		[154] = icon_path.."Fish\\mtrout.tga",
+-- 		[155] = icon_path.."Gas\\cinder.tga",
+-- 		[156] = icon_path.."Fish\\debris.tga",
+-- 		[157] = icon_path.."Fish\\dsagefish.tga",
+-- 		[158] = icon_path.."Fish\\emp_salmon.tga",
+-- 		[159] = icon_path.."Fish\\matis_shrimp.tga",
+-- 		[160] = icon_path.."Fish\\darter.tga",
+-- 		[161] = icon_path.."Fish\\lungfish.tga",
+-- 		[162] = icon_path.."Fish\\paddle_fish.tga",
+-- 		[163] = icon_path.."Fish\\redbelly.tga",
+-- 		[164] = icon_path.."Fish\\reef_octopus.tga",
+-- 		[165] = icon_path.."Fish\\debris.tga",
+-- 		[166] = icon_path.."Fish\\jewel.tga",
+-- 		[167] = icon_path.."Fish\\spine.tga",
+-- 		[168] = icon_path.."Fish\\tiger.tga",
+-- 		[169] = icon_path.."Fish\\abyssalgulper.tga",
+-- 		[170] = icon_path.."Fish\\abyssalgulper.tga",
+-- 		[171] = icon_path.."Fish\\whiptail.tga",
+-- 		[172] = icon_path.."Fish\\sturgeon.tga",
+-- 		[173] = icon_path.."Fish\\fatsleeper.tga",
+-- 		[174] = icon_path.."Fish\\fireammonite.tga",
+-- 		[175] = icon_path.."Fish\\jawlessskulker.tga",
+-- 		[176] = icon_path.."Fish\\seascorpion.tga",
+-- 		[177] = icon_path.."Fish\\seascorpion.tga",
+-- 		[178] = icon_path.."Fish\\piranha.tga",
+-- 		[179] = icon_path.."Fish\\fish_hook.tga",
+-- 		[180] = icon_path.."Fish\\fish_hook.tga",
+-- 		[181] = icon_path.."Fish\\suckerfish.tga",
+-- 		[182] = icon_path.."Fish\\fish_hook.tga",
+-- 		[183] = icon_path.."Fish\\fish_hook.tga",
+-- 		[184] = icon_path.."Fish\\fish_hook.tga",
+-- 		[185] = icon_path.."Fish\\fish_hook.tga",
+-- 		[186] = icon_path.."Fish\\fish_hook.tga",
+-- 		[187] = icon_path.."Fish\\fish_hook.tga",
+-- 		[188] = icon_path.."Fish\\frenzied_fangtooth.tga",
+-- 		[189] = icon_path.."Fish\\great_sea_catfish.tga",
+-- 		[190] = icon_path.."Fish\\lane_snapper.tga",
+-- 		[191] = icon_path.."Fish\\rasboralus.tga",
+-- 		[192] = icon_path.."Fish\\redtail_loach.tga",
+-- 		[193] = icon_path.."Fish\\sand_shifter.tga",
+-- 		[194] = icon_path.."Fish\\slimy_mackerel.tga",
+-- 		[195] = icon_path.."Fish\\tiragarde_perch.tga",
+-- 		[196] = icon_path.."Fish\\utaka.tga",
+-- 		[197] = icon_path.."Fish\\mauvestinger.tga",
+-- 		[198] = icon_path.."Fish\\viperfish.tga",
+-- 		[199] = icon_path.."Fish\\ionizedminnow.tga",
+-- 		[1101] = icon_path.."Fish\\sentryfish.tga",
+-- 	},
+
+DATA.fishIconToId = {
+    
+    [101] = "Treasure",
+    [103] = "Treasure",
+    [105] = "6359", -- Firefin Snapper
+    [106] = "21153", -- Greater Sagefish
+    [107] = "6358", -- Oily Blackmouth
+    [108] = "21071", -- Sagefish
+    [109] = "6522", -- Firefin Snapper
+    [110] = "13422", -- Stonescale Eel
+    [114] = "27437", -- Icefin Bluefish
+    [115] = "27425", -- Spotted Feltail
+    [116] = "27435", -- Figluster's Mudfish
+    [117] = "27438", -- Golden Darter
+    [118] = "27429", -- Zangarian Sporefish
+    [123] = "27439", -- Furious Crawdad
+    [112] = "Treasure",
+    [119] = "Treasure",
+    [121] = "Treasure",
+    [124] = "Treasure",
+    [126] = "Treasure",
+    [127] = "Treasure",
+    [128] = "Treasure",
+    [129] = "Treasure",
+    [130] = "Treasure",
+    [131] = "Treasure",
+    [133] = "Treasure",
+    [134] = "Treasure",
+    [135] = "Treasure",
+    [136] = "Treasure",
+    [137] = "Treasure",
+    [138] = "Treasure",
+    [139] = "Treasure",
+    [140] = "Treasure",
+    [141] = "Treasure",
+    [142] = "Treasure",
+    [143] = "Treasure",
+    [144] = "Treasure",
+    [145] = "Treasure",
+    [146] = "Treasure",
+    [147] = "Treasure",
+    [148] = "Treasure",
+    [149] = "Treasure",
+    [151] = "Treasure",
+    [152] = "Treasure",
+    [153] = "Treasure",
+    [154] = "Treasure",
+    [155] = "Treasure",
+    [156] = "Treasure",
+    [157] = "Treasure",
+    [158] = "Treasure",
+    [159] = "Treasure",
+    [160] = "Treasure",
+    [161] = "Treasure",
+    [162] = "Treasure",
+    [163] = "Treasure",
+    [164] = "Treasure",
+    [165] = "Treasure",
+    [166] = "Treasure",
+    [167] = "Treasure",
+    [168] = "Treasure",
+    [169] = "Treasure",
+    [170] = "Treasure",
+    [171] = "Treasure",
+    [172] = "Treasure",
+    [173] = "Treasure",
+
+}
+
+DATA.mapToZoneID = {
+    [1411] = "14", -- Durotar
+    [1412] = "215", -- Mulgore
+    [1413] = "17", -- The Barrens
+    [1416] = "36", -- Alterac Mountains
+    [1417] = "45", -- Arathi Highlands
+    [1418] = "3", -- Badlands
+    [1419] = "4", -- Blasted Lands
+    [1420] = "85", -- Tirisfal Glades
+    [1421] = "130", -- Silverpine Forest
+    [1422] = "28", -- Western Plaguelands
+    [1423] = "139", -- Eastern Plaguelands
+    [1424] = "267", -- Hillsbrad Foothills
+    [1425] = "47", -- The Hinterlands
+    [1426] = "1", -- Dun Morogh
+    [1427] = "51", -- Searing Gorge
+    [1428] = "46", -- Burning Steppes
+    [1429] = "12", -- Elwynn Forest
+    [1430] = "41", -- Deadwind Pass
+    [1432] = "38", -- Loch Modan
+    [1433] = "44", -- Redridge Mountains
+    [1434] = "33", -- Stranglethorn Vale
+    [1435] = "8", -- Swamp of Sorrows
+    [1436] = "40", -- Westfall
+    [1437] = "11", -- Wetlands
+    [1438] = "141", -- Teldrassil
+    [1431] = "10", -- Duskwood
+    [1439] = "148", -- Darkshore
+    [1440] = "331", -- Ashenvale
+    [1441] = "400", -- Thousand Needles
+    [1442] = "406", -- Stonetalon Mountains
+    [1443] = "405", -- Desolace
+    [1444] = "357", -- Feralas
+    [1445] = "15", -- Dustwallow Marsh
+    [1446] = "440", -- Tanaris
+    [1447] = "16", -- Azshara
+    [1448] = "361", -- Felwood
+    [1449] = "490", -- Un'Goro Crater
+    [1450] = "493",  -- Moonglade
+    [1451] = "1377", -- Silithus
+    [1452] = "618",  -- Winterspring
+    [1453] = "1519", -- Stormwind City
+    [1454] = "1637", -- Orgrimmar
+    [1455] = "1537", -- Ironforge
+    [1456] = "1638", -- Thunder Bluff
+    [1457] = "1657", -- Darnassus
+    [1458] = "1497", -- Undercity
+    [1459] = "2597", -- Alterac Valley
+    [1460] = "3277", -- Warsong Gulch
+    [1461] = "3358", -- Arathi Basin
+    [1944] = "3483", -- Hellfire Peninsula
+    [1946] = "3521", -- Zangarmarsh
+    [1948] = "3520", -- Shadowmoon Valley
+    [1951] = "3518", -- Nagrand
+    [1952] = "3519", -- Terokkar Forest
+    [1953] = "3523", -- Netherstorm
+}
+
+local function wrapText(text, maxLength)
+    local wrappedText = ""
+    local lineLength = 0
+
+    for word in text:gmatch("%S+") do
+        if lineLength + #word + 1 > maxLength then
+            wrappedText = wrappedText .. "\n" .. word
+            lineLength = #word
+        else
+            if lineLength > 0 then
+                wrappedText = wrappedText .. " " .. word
+                lineLength = lineLength + #word + 1
+            else
+                wrappedText = wrappedText .. word
+                lineLength = #word
+            end
+        end
+    end
+
+    return wrappedText
+end
+
+local charsForWrap = 50
+
+DATA.equipment = {
+    ["gear"] = {
+        {
+            ["id"] = 19972,
+            ["order"] = 1,
+            ["desc"] = wrapText("Reward for turning in a rare Keefer's Angelfish during the Stranglethorn Fishing Extravaganza.", charsForWrap)
+        },
+        {
+            ["id"] = 19969,
+            ["order"] = 2,
+            ["desc"] = wrapText("Reward for turning in a rare Brownell's Blue Striped Racer during the Stranglethorn Fishing Extravaganza.", charsForWrap)
+        },
+        {
+            ["id"] = 33820,
+            ["order"] = 3,
+            ["desc"] = wrapText("Rare reward from TBC fishing daily Bag of Fishing Treasures. Gives +5 fishing and can apply a +75 lure to your pole.", charsForWrap)
+        },
+    },
+    ["rods"] = {
+        {
+            ["id"] = 6256,
+            ["order"] = 1,
+            ["desc"] = wrapText("Sold by vendors across the world.", charsForWrap)
+        },
+        {
+            ["id"] = 12225,
+            ["order"] = 2,
+            ["desc"] = wrapText("Alliance only. Quest reward from \"The Family and the Fishing Pole\" from Gubber Blump south west of Auberdine in Darkshore.", charsForWrap)
+        },
+        {
+            ["id"] = 6365,
+            ["order"] = 3,
+            ["desc"] = wrapText("Sold by vendors across the world in limited stock.", charsForWrap)
+        },
+        {
+            ["id"] = 6366,
+            ["order"] = 4,
+            ["desc"] = wrapText("Extremely rare drop from inland fishing spots in 10-20 zones.", charsForWrap)
+        },
+        {
+            ["id"] = 6367,
+            ["order"] = 5,
+            ["desc"] = wrapText("Found in \"Shellfish Trap\" in SW corner of Desolace. About 1% drop rate.", charsForWrap)
+        },
+        {
+            ["id"] = 19022,
+            ["order"] = 6,
+            ["desc"] = wrapText("Horde only. Quest reward from \"Snapjaws, Mon!\" from Katoom the Angler on the eastern shore of the Hinterlands.", charsForWrap)
+        },
+        {
+            ["id"] = 19970,
+            ["order"] = 7,
+            ["desc"] = wrapText("Reward for winning the prestigious Stranglethorn Fishing Extravaganza.", charsForWrap)
+        },
+        {
+            ["id"] = 25978,
+            ["order"] = 8,
+            ["desc"] = wrapText("Reward from \"Rather Be Fishin'\" in Terokkar Forest. Requires fishing 200 and gives +20 fishing.", charsForWrap)
+        },
+    },
+    ["lures"] = {
+        {
+            ["id"] = 6529,
+            ["order"] = 1,
+            ["desc"] = wrapText("Sold by vendors across the world.", charsForWrap)
+        },
+        {
+            ["id"] = 6530,
+            ["order"] = 2,
+            ["desc"] = wrapText("Sold by vendors across the world.", charsForWrap)
+        },
+        {
+            ["id"] = 6532,
+            ["order"] = 3,
+            ["desc"] = wrapText("Sold by vendors across the world.", charsForWrap)
+        },
+        {
+            ["id"] = 6533,
+            ["order"] = 4,
+            ["desc"] = wrapText("Sold by vendors in limited supply and crafted by engineers. Applies +100 fishing for 10 minutes.", charsForWrap)
+        },
+        {
+            ["id"] = 6811,
+            ["order"] = 5,
+            ["desc"] = wrapText("Available from Alliance quest 'Electropellers' in Darkshore.", charsForWrap)
+        },
+        {
+            ["id"] = 34861,
+            ["order"] = 6,
+            ["desc"] = wrapText("Common reward from TBC fishing daily Bag of Fishing Treasures. Applies +100 fishing to your pole for 10 minutes.", charsForWrap)
+        },
+    },
+    ["other"] = {
+        {
+            ["id"] = 19971,
+            ["order"] = 1,
+            ["desc"] = wrapText("Reward for turning in a rare Dezian Queenfish during the Stranglethorn Fishing Extravaganza. Permanent +5 fishing line for a pole.", charsForWrap)
+        },
+        {
+            ["id"] = 11152,
+            ["order"] = 2,
+            ["desc"] = wrapText("Formula: Enchant Gloves - Fishing. Enchanters can find this recipe on murlocs in Hillsbrad Foothills.", charsForWrap)
+        },
+        {
+            ["id"] = 34836,
+            ["order"] = 3,
+            ["desc"] = wrapText("TBC fishing daily reward. Permanent fishing line upgrade that adds +3 fishing to a pole.", charsForWrap)
+        },
+        {
+            ["id"] = 34109,
+            ["order"] = 4,
+            ["desc"] = wrapText("Teaches Find Fish, showing fishing pools on the minimap. Found from fishing containers and daily rewards.", charsForWrap)
+        },
+        {
+            ["id"] = 34834,
+            ["order"] = 5,
+            ["desc"] = wrapText("Rare recipe from TBC fishing daily rewards. Teaches Captain Rumsey's Lager, a drink that gives +10 fishing for 3 minutes.", charsForWrap)
+        },
+        {
+            ["id"] = 34832,
+            ["order"] = 6,
+            ["desc"] = wrapText("Crafted by cooks who know Recipe: Captain Rumsey's Lager. Gives +10 fishing for 3 minutes.", charsForWrap)
+        },
+    },
+    ["pets"] = {
+        {
+            ["id"] = 27388,
+            ["order"] = 1,
+            ["desc"] = wrapText("Very rare catch from Highland Mixed Schools in Terokkar Forest. Can grant several wishes, including the Magical Crawdad Box pet reward.", charsForWrap)
+        },
+        {
+            ["id"] = 27445,
+            ["order"] = 2,
+            ["desc"] = wrapText("Rare reward from Mr. Pinchy. Teaches the Magical Crawdad companion pet.", charsForWrap)
+        },
+        {
+            ["id"] = 35350,
+            ["order"] = 3,
+            ["desc"] = wrapText("Baby crocolisk companion from the Crocolisks in the City fishing daily reward bag.", charsForWrap)
+        },
+        {
+            ["id"] = 33818,
+            ["order"] = 4,
+            ["desc"] = wrapText("Baby crocolisk companion from the Crocolisks in the City fishing daily reward bag.", charsForWrap)
+        },
+        {
+            ["id"] = 35349,
+            ["order"] = 5,
+            ["desc"] = wrapText("Baby crocolisk companion from the Crocolisks in the City fishing daily reward bag.", charsForWrap)
+        },
+        {
+            ["id"] = 33816,
+            ["order"] = 6,
+            ["desc"] = wrapText("Baby crocolisk companion from the Crocolisks in the City fishing daily reward bag.", charsForWrap)
+        },
+    }
+}
+local skillRankNames = {
+    {
+        ["name"]= "Apprentice",
+        ["rank"]= 149
+    },
+    {
+        ["name"]= "Journeyman",
+        ["rank"]= 224
+    },
+    {
+        ["name"]= "Expert",
+        ["rank"]= 299
+    },
+    {
+        ["name"]= "Artisan",
+        ["rank"]= 300
+    },
+    {
+        ["name"]= "Master",
+        ["rank"]= 375
+    }
+}
+
+DATA.validFish = {}
+for k in pairs(DATA.fish) do table.insert(DATA.validFish, k) end
+DATA.validZones = {}
+for k in pairs(DATA.zones) do table.insert(DATA.validZones, k) end
+DATA.validPools = {}
+for k in pairs(DATA.pools) do table.insert(DATA.validPools, k) end
+  
+function DATA:SplitGold(sourceCopperValue)
+    local gold = math.floor(sourceCopperValue / 10000)
+    local silver = math.floor((sourceCopperValue - (gold * 10000)) / 100)
+    local copper = sourceCopperValue - (gold * 10000) - (silver * 100)
+    return gold, silver, copper
+end
+
+function DATA:IsInList(list, value)
+    for i = 1, #list do
+        if list[i] == value then
+            return true
+        end
+    end
+    return false
+end
+
+function DATA:GetSortedZonesForFish(fishId)
+    local sortedZones = {}
+    for i = 1, #DATA.fish[fishId].fishedIn do
+        local zoneId = DATA.fish[fishId].fishedIn[i]
+        if DATA.zones[zoneId] ~= nil then
+            table.insert(sortedZones, DATA.zones[zoneId])
+        end
+    end
+    table.sort(sortedZones, function(a, b)
+        local aPerct = a.fishStats[fishId].catchChance
+        local bPerct = b.fishStats[fishId].catchChance
+        return aPerct > bPerct
+    end)
+    return sortedZones
+end
+
+function DATA:GetCountForZoneTable(table, fishId)
+    if table == nil then
+        print("table is nil")
+        return 0
+    end
+    
+    for i = 1, #table do
+        if table[i].id == fishId then
+            return table[i].count
+        end
+    end
+
+    return 0
+end
+
+function DATA:GetSortedZonesForPool(poolId)
+    local sortedZones = {}
+    if DATA.pools[poolId] == nil then
+        return sortedZones
+    end
+    for i = 1, #DATA.pools[poolId].zones do
+        local zoneId = DATA.pools[poolId].zones[i]
+        if DATA.zones[zoneId] ~= nil then
+            local zoneData = DATA.zones[zoneId]
+            zoneData.tmpCount = DATA:GetCountForZoneTable(DATA.zones[zoneId].fishingPools, poolId)
+            table.insert(sortedZones, zoneData)
+        end
+    end
+    table.sort(sortedZones, function(a, b)
+        return a.tmpCount > b.tmpCount
+    end)
+    return sortedZones
+end
+
+function DATA:GetRankNameForLevel(level)
+    for i = 1, #skillRankNames do
+        if level <= skillRankNames[i].rank then
+            return skillRankNames[i].name
+        end
+    end
+    return "Apprentice"
+end
+
+
+function DATA:LoadPlayerData()
+    -- load player name and realm
+    DATA.playerInfo.name, DATA.playerInfo.realm = UnitName("player")
+    -- load player level
+    DATA.playerInfo.level = UnitLevel("player")
+
+    DATA.playerSkill.hasFishing = false
+    for skillIndex = 1, GetNumSkillLines() do
+        -- skillName, header, isExpanded, skillRank, numTempPoints, skillModifier, skillMaxRank, isAbandonable, stepCost, rankCost, minLevel, skillCostType, skillDescription
+        local skillName, header, isExpanded, skillRank, numTempPoints, skillModifier, skillMaxRank, isAbandonable, stepCost, rankCost, minLevel, skillCostType, skillDescription = GetSkillLineInfo(skillIndex)
+
+        if skillName == "Fishing" then
+            DATA.playerSkill.hasFishing = true
+            -- print("---SKILL DATA---")
+            -- print("skillName: " .. skillName)
+            -- print("isExpanded: " .. tostring(isExpanded))
+            -- print("skillRank: " .. skillRank)
+            -- print("numTempPoints: " .. numTempPoints)
+            -- print("skillModifier: " .. skillModifier)
+            -- print("skillMaxRank: " .. skillMaxRank)
+            -- print("isAbandonable: " .. tostring(isAbandonable))
+            -- print("minLevel: " .. minLevel)
+            -- print("skillCostType: " .. skillCostType)
+            -- print("skillDescription: " .. skillDescription)
+            -- print("----------------")
+            DATA.playerSkill.level = skillRank
+            DATA.playerSkill.maxLevel = skillMaxRank
+            DATA.playerSkill.rankName = DATA:GetRankNameForLevel(skillRank)
+            DATA.playerSkill.skillModifier = skillModifier
+            DATA.playerSkill.modLevel = skillRank + skillModifier
+        end
+    end
+end
+
+function DATA:GetSortedFishByCatchLevel()
+    local sortedFish = {}
+    for i = 1, #DATA.validFish do
+        table.insert(sortedFish, DATA.validFish[i])
+    end
+    table.sort(sortedFish, function(a, b)
+        if DATA.fish[a].avoidGetawayLevel == DATA.fish[b].avoidGetawayLevel then
+            return DATA.fish[a].minimumFishingLevel < DATA.fish[b].minimumFishingLevel
+        end
+        return DATA.fish[a].avoidGetawayLevel < DATA.fish[b].avoidGetawayLevel
+    end)
+    return sortedFish
+end
+
+function DATA:GetSortedPoolsByCatchLevel()
+    local sortedPools = {}
+    for i = 1, #DATA.validPools do
+        table.insert(sortedPools, DATA.validPools[i])
+    end
+    table.sort(sortedPools, function(a, b)
+        if DATA.fish[a].avoidGetawayLevel == DATA.fish[b].avoidGetawayLevel then
+            return DATA.fish[a].minimumFishingLevel < DATA.fish[b].minimumFishingLevel
+        end
+        return DATA.fish[a].avoidGetawayLevel < DATA.fish[b].avoidGetawayLevel
+    end)
+    return sortedPools
+end
+
+function DATA:CatchRateColor(rate)
+    if rate <= 0.10 then
+        return DATA.textColours.red
+    elseif rate <= 0.3333 then
+        return DATA.textColours.yellow
+    else
+        return DATA.textColours.green
+    end
+end
+
+
+AnglerAtlas.MM:RegisterModule("DATA", DATA)
+AnglerAtlas.MM:RegisterModule("STATE", STATE)
+
+
+-- Data for me:
+-- local borderFiles = {
+--     ["UI-DialogBox-TestWatermark-Border"] = "Interface\\DialogFrame\\UI-DialogBox-TestWatermark-Border",
+--     ["UI-DialogBox-Border"] = "Interface\\DialogFrame\\UI-DialogBox-Border",
+--     ["UI-DialogBox-Gold-Border"] = "Interface\\DialogFrame\\UI-DialogBox-Gold-Border",
+--     ["UI-Toast-Border"] = "Interface\\FriendsFrame\\UI-Toast-Border",
+--     ["UI-SliderBar-Border"] = "Interface\\Buttons\\UI-SliderBar-Border",
+--     ["UI-Arena-Border"] = "Interface\\ARENAENEMYFRAME\\UI-Arena-Border",
+--     ["ChatBubble-Backdrop"] = "Interface\\Tooltips\\ChatBubble-Backdrop",
+--     ["UI-Tooltip-Border"] = "Interface\\Tooltips\\UI-Tooltip-Border",
+--     ["UI-TalentFrame-Active"] = "Interface\\TALENTFRAME\\UI-TalentFrame-Active",
+-- }
+-- local backgroundFiles = {
+--     ["UI-Background-Rock"] = "Interface\\FrameGeneral\\UI-Background-Rock",
+--     ["UI-Background-Marble"] = "Interface\\FrameGeneral\\UI-Background-Marble",
+--     ["GarrisonMissionParchment"] = "Interface\\Garrison\\GarrisonMissionParchment",
+--     ["AdventureMapParchmentTile"] = "Interface\\AdventureMap\\AdventureMapParchmentTile",
+--     ["AdventureMapTileBg"] = "Interface\\AdventureMap\\AdventureMapTileBg",
+--     ["Bank-Background"] = "Interface\\BankFrame\\Bank-Background",
+--     ["UI-Party-Background"] = "Interface\\CharacterFrame\\UI-Party-Background",
+--     ["GarrisonLandingPageMiddleTile"] = "Interface\\Garrison\\GarrisonLandingPageMiddleTile",
+--     ["GarrisonMissionUIInfoBoxBackgroundTile"] = "Interface\\Garrison\\GarrisonMissionUIInfoBoxBackgroundTile",
+--     ["GarrisonShipMissionParchment"] = "Interface\\Garrison\\GarrisonShipMissionParchment",
+--     ["GarrisonUIBackground"] = "Interface\\Garrison\\GarrisonUIBackground",
+--     ["GarrisonUIBackground2"] = "Interface\\Garrison\\GarrisonUIBackground2",
+--     ["CollectionsBackgroundTile"] = "Interface\\Collections\\CollectionsBackgroundTile",
+--     ["BlackMarketBackground-Tile"] = "Interface\\BlackMarket\\BlackMarketBackground-Tile",
+-- }
+-- Backdrops
+-- BACKDROP_ACHIEVEMENTS_0_64
+-- BACKDROP_ARENA_32_32
+-- BACKDROP_DIALOG_32_32
+-- BACKDROP_DARK_DIALOG_32_32
+-- BACKDROP_DIALOG_EDGE_32
+-- BACKDROP_GOLD_DIALOG_32_32
+-- BACKDROP_WATERMARK_DIALOG_0_16
+-- BACKDROP_SLIDER_8_8
+-- BACKDROP_PARTY_32_32
+-- BACKDROP_TOAST_12_12
+-- BACKDROP_CALLOUT_GLOW_0_16
+-- BACKDROP_CALLOUT_GLOW_0_20
+-- BACKDROP_TEXT_PANEL_0_16
+-- BACKDROP_CHARACTER_CREATE_TOOLTIP_32_32
+-- BACKDROP_TUTORIAL_16_16
