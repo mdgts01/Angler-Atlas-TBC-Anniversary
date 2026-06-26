@@ -1425,6 +1425,14 @@ DATA.zones = {
             ["13758"] = {
                 ["catchChance"] = 0.05,
             },
+            -- Crescent-Tail Skullfish
+            ["33824"] = {
+                ["catchChance"] = 0.13,
+            },
+            -- Bloodfin Catfish
+            ["33823"] = {
+                ["catchChance"] = 0.13,
+            },
         }
     },
     ["139"] = {
@@ -1672,8 +1680,23 @@ DATA.zones = {
                 ["catchChance"] = 0.50,
             },
         }
-    }
-
+    },
+    ["3805"] = {
+        ["id"] = 3805,
+        ["name"] = "Zul'Aman",
+        ["faction"] = "Contested",
+        ["fishingLevel"] = 330,
+        ["fishStats"] = {
+            -- Crescent-Tail Skullfish
+            ["33824"] = {
+                ["catchChance"] = 0.20,
+            },
+            -- Bloodfin Catfish
+            ["33823"] = {
+                ["catchChance"] = 0.09,
+            },
+        }
+    },
 }
 
 ---------------------------------
@@ -1956,6 +1979,24 @@ DATA.fish = {
             "46", -- Burning Steppes
             "405", -- Desolace
             "331", -- Ashenvale
+        }
+    },
+    ["33824"] = {
+        ["name"] = "Crescent-Tail Skullfish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 330,
+        ["avoidGetawayLevel"] = 375,
+        ["fishedIn"] = {
+            "41", -- Deadwind Pass
+        }
+    },
+    ["33823"] = {
+        ["name"] = "Bloodfin Catfish",
+        ["type"] = "I",
+        ["minimumFishingLevel"] = 375,
+        ["avoidGetawayLevel"] = 375,
+        ["fishedIn"] = {
+            "41", -- Deadwind Pass
         }
     },
     ["6362"] = {
@@ -2627,6 +2668,38 @@ DATA.recipes = {
                 },
             },
             ["recipeItemId"] = "13941"
+        }
+    },
+    --|   Crescent-Tail Skullfish
+    ["33824"] = {
+        {
+            ["productId"] = "33825",
+            ['productQ'] = 1,
+            ["recipeName"] = "Skullfish Soup",
+            ['reagents'] = {
+                -- Crescent-Tail Skullfish
+                {
+                    ["itemId"] = "33824",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "33870"
+        }
+    },
+    --|   Bloodfin Catfish
+    ["33823"] = {
+        {
+            ["productId"] = "33867",
+            ['productQ'] = 1,
+            ["recipeName"] = "Broiled Bloodfin",
+            ['reagents'] = {
+                -- Bloodfin Catfish
+                {
+                    ["itemId"] = "33823",
+                    ["itemQ"] = 1
+                },
+            },
+            ["recipeItemId"] = "33869"
         }
     },
     --|   Raw Rockscale Cod
