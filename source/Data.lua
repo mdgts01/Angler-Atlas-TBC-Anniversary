@@ -1680,23 +1680,23 @@ DATA.zones = {
                 ["catchChance"] = 0.50,
             },
         }
-    },
-    ["3805"] = {
-        ["id"] = 3805,
-        ["name"] = "Zul'Aman",
-        ["faction"] = "Contested",
-        ["fishingLevel"] = 330,
-        ["fishStats"] = {
-            -- Crescent-Tail Skullfish
-            ["33824"] = {
-                ["catchChance"] = 0.20,
-            },
-            -- Bloodfin Catfish
-            ["33823"] = {
-                ["catchChance"] = 0.09,
-            },
-        }
-    },
+    }
+    --["3805"] = {
+    --    ["id"] = 3805,
+    --    ["name"] = "Zul'Aman",
+    --    ["faction"] = "Contested",
+    --    ["fishingLevel"] = 330,
+    --    ["fishStats"] = {
+    --        -- Crescent-Tail Skullfish
+    --        ["33824"] = {
+    --            ["catchChance"] = 0.20,
+    --        },
+    --        -- Bloodfin Catfish
+    --        ["33823"] = {
+    --            ["catchChance"] = 0.09,
+    --        },
+    --    }
+    --},
 }
 
 ---------------------------------
